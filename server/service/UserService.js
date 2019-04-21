@@ -6,5 +6,6 @@ class User{
 	}
 }
 
-let me = new User("David", "hesoyam");
-console.log(me);
+module.exports.initUser = (name, password) => {
+	return new User(name, password);
+}
