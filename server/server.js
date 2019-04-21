@@ -6,7 +6,8 @@ const socketIO = require('socket.io');
 const {generateCommand} = require('./util/command');
 
 const publicPath = path.join(__dirname, '../public');
-const port = 3000;
+//process.env.PORT is some heroku shit. 3000 if not used.
+const port = process.env.PORT || 3000;
 let app = express();
 var server = http.createServer(app);
 var io = socketIO(server); 
