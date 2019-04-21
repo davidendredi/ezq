@@ -1,0 +1,14 @@
+{
+  "name": "ezq",
+  "version": "1.0.0",
+  "description": "The ezq ecosystem.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dávid Endrédi",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.4"
+  }
+}
