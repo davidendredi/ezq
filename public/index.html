@@ -3,34 +3,44 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/index.js"></script>
   </head>
   <body>
-    <p>This is a short demo of socket connection & communication with socket.io</p>
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-      // open connection
-      let socket = io();
-      socket.on('connect', () => {
-        console.log("Connected to server.");
-        
-        
-        socket.emit('registerDevice', localStorage.getItem('deviceID'), (newUid) => {
-          localStorage.setItem('deviceID', newUid);
-        });
+    <div class="container-fluid">
+
+      <!-- Kunden URL -->
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li id="customUrl" class="breadcrumb-item" aria-current="page">MyUrl.com</li>
+        </ol>
+      </nav>
+
+      <!-- Liste -->
+      <div>
+          <div class="row">
+              <div class="col-lg-10 col-xs-12">
+                  <div id="waitingListDiv">
+                    <ul id="waitingListItems" class="list-group"></ul>
+                  </div>
+              </div>
+              <div class="col-lg-2 col-xs-12">
+                  <div class="justify-content-center">
+                      <div id="qrcode"></div>
+                  </div>
+              </div>
+          </div>
 
 
-      });
-
-      socket.on('disconnect', () => {
-        console.log("Disconnected from server.");
-      });
-
-      socket.on('command', (value, approveCommand) => {
-        // TODO: React to the command from the server (see command catalog)
-        console.log(value);
-        // Callback at the end. This way, the server knows if and when the client has handeled the command.
-        approveCommand();
-      });
-    </script>
+          <div class="row">
+              <div class="col-xs-12 col-lg-1">
+                <button type="button" class="btn btn-info">Toggle session</button>
+              </div>
+          </div>
+      </div>
+    </div>
   </body>
 </html>
