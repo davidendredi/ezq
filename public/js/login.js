@@ -16,5 +16,7 @@ $(document).ready(()=>{
         $("#routeRegister").addClass("active");
     });
 
+    $('#alertSucc').hide();
+    $('#alertDanger').hide();
     $("#RegisterDiv").children().hide();
 });

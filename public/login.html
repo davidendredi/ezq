@@ -18,6 +18,7 @@
         max-height : 300px;
     }
 </style>
+
 <div class="container-fluid">
 
     <div id="carousel" class="carousel slide" data-ride="carousel">
@@ -56,6 +57,14 @@
         </li>
     </ul>
 
+    <div id="alertSucc" class="alert alert-success" role="alert">
+        Coole sau
+    </div>
+
+    <div id="alertDanger" class="alert alert-danger" role="alert">
+        Coole sau
+    </div>
+
     <div id="LoginDiv">
         <form>
             <div class="input-group mb-3">
@@ -79,7 +88,7 @@
     </div>
 
     <div id="RegisterDiv">
-        <form>
+        <div>
             <div class="input-group mb-3">
                 <div class="input-group-prepend">
                     <span class="input-group-text">https://</span>
@@ -88,8 +97,8 @@
             </div>
 
             <div class="form-group">
-                <label for="userReg">User</label>
-                <input type="text" class="form-control" id="userReg" placeholder="User">
+                <label for="mailReg">Mail</label>
+                <input type="text" class="form-control" id="mailReg" placeholder="Mail">
             </div>
 
             <div class="form-group">
@@ -108,10 +117,71 @@
                 </label>
             </div>
 
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
+            <button id="submitBtn" type="submit" class="btn btn-primary">Submit</button>
+        </div>
     </div>
 </div>
+<script>
+      // open connection
+      let socket = io();
+      socket.on('connect', () => {
+        console.log("Connected to server.");
+        
+        
+        socket.emit('registerDevice', localStorage.getItem('ezqContext'), (newContext) => {
+          localStorage.setItem('ezqContext', newContext);
+        });
 
+      });
+
+      socket.on('disconnect', () => {
+        console.log("Disconnected from server.");
+      });
+
+      socket.on('command', (command, approveCommand) => {
+        // TODO: React to the command from the server (see command catalog)
+        switch(command.commandType){
+          case "SHOW_MESSAGE_SUCCESS": 
+            //alert("Successfully registered.");
+            $('#alertSucc').show();
+            setTimeout(() => {
+                $('#alertSucc').hide();
+            }, 3000);
+          break;
+          case "SHOW_LOGIN_SCREEN":
+            $("#LoginDiv").children().show();
+            $("#RegisterDiv").children().hide();
+
+            $("#routeLogin").addClass("active");
+            $("#routeRegister").removeClass("active");
+          break;
+          case "SHOW_INVALID_INPUT_ERROR_MESSAGE":
+            /* ToDo Print error message command.params.msg */
+            $('#alertDanger').show();
+            setTimeout(() => {
+                $('#alertDanger').hide();
+            }, 3000);
+            $('#alertDanger').html(command.params.message);
+          break;
+        }
+        console.log("Received command:\n" + JSON.stringify(command));
+
+        // Callback at the end. This way, the server knows if and when the client has handeled the command.
+        approveCommand();
+      });
+
+      function submit() {
+        socket.emit('registerOwner', {
+            prename: "Heinz",
+            surname: "Peter",
+            email: $("#mailReg").val(),
+            password1: $("#passwordReg").val(),
+            password2: $("#passwordRepReg").val(),
+            context: localStorage.getItem('ezqContext')
+            });
+      }
+
+      $("#submitBtn").on("click", submit);
+    </script>
 </body>
 </html>

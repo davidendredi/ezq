@@ -101,14 +101,14 @@
       socket.on('command', (command, approveCommand) => {
         // TODO: React to the command from the server (see command catalog)
         switch(command.commandType){
-          case SHOW_MESSAGE_SUCCESS: 
+          case "SHOW_MESSAGE_SUCCESS": 
             /* ToDo */
           break;
-          case SHOW_LOGIN_SCREEN:
+          case "SHOW_LOGIN_SCREEN":
             /* ToDo */
           break;
-          case SHOW_INVALID_INPUT_ERROR_MESSAGE:
-            /* ToDo Print error message command.params.msg*/
+          case "SHOW_INVALID_INPUT_ERROR_MESSAGE":
+            /* ToDo Print error message command.params.msg */
           break;
         }
         // Callback at the end. This way, the server knows if and when the client has handeled the command.

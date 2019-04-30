@@ -82,15 +82,14 @@ io.on('connection', (socket) => {
 					socket.emit('command', generateCommand(CommandType.Registration.SHOW_MESSAGE_SUCCESS, {}), () => {
 						//console.log("Command approved!");
 					});
+					socket.emit('command', generateCommand(CommandType.Registration.SHOW_LOGIN_SCREEN, {}), () => {
+						//console.log("Command approved!");
+					});
 
 				break;
 				case Exception.Registration.failure.INVALID_EMAIL:
 					
-					socket.emit('command', generateCommand(CommandType.Registration.SHOW_MESSAGE_SUCCESS, {}), () => {
-						//console.log("Command approved!");
-					});
-
-					socket.emit('command', generateCommand(CommandType.Registration.SHOW_LOGIN_SCREEN, {}), () => {
+					socket.emit('command', generateCommand(CommandType.Registration.SHOW_INVALID_INPUT_ERROR_MESSAGE, {message: "Invalid E-Mail."}), () => {
 						//console.log("Command approved!");
 					});
 
