@@ -104,6 +104,11 @@
         // Callback at the end. This way, the server knows if and when the client has handeled the command.
         approveCommand();
       });
+
+      socket.on('testCommand', (msg) => {
+        console.log(msg.txt);
+      });
+
     </script>
 
     <div class="container-fluid">

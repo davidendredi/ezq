@@ -1,11 +1,11 @@
 /*
 
-Contains all relevant information of a client state, e.g. deviceID or sessionID etc.
+Contains all relevant information of a client state, e.g. deviceID.
 */
 
 class Context{
 	constructor(){
-		this.sessionId = "Session_" + (new Date().getTime());
+		this.deviceId = "Device_" + (new Date().getTime());
 		this.userId = null;
 	}
 

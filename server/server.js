@@ -1,9 +1,9 @@
+const HashMap = require('hashmap');
 
 const {generateCommand} = require('./util/command');
 const {isRealString} = require('./util/validation');
 
 const Service = require('./service/Service');
-let service = new Service(); 
 
 const Context = require('./util/context');
 const Exception = require('./util/exception');
@@ -26,9 +26,19 @@ app.use(express.static(publicPath));
 /*---------------------------------------------------------*/
 /*---Addressed Messages------------------------------------*/
 
+let socketMap = new HashMap();
+
+let sendMessageTo = function(deviceId, txt){
+	socketMap.get(deviceId).emit('testCommand', {txt: txt});
+}
 
 /*---------------------------------------------------------*/
 /*---Controller Implementation-----------------------------*/
+
+let service = new Service();
+
+let testSocket = null;
+
 
 io.on('connection', (socket) => { 
 
@@ -45,8 +55,11 @@ io.on('connection', (socket) => {
 			// First connection with this client
 			currentContext = new Context(); // Create new Context only with random session id; userId null !
 			setContext(JSON.stringify(currentContext));
-			console.log("New client connected. Context created:\n" + JSON.stringify(newContext));
+			console.log("New client connected. Context created:\n" + JSON.stringify(currentContext));
 		}
+
+		// save/update socket associated with deviceId
+		socketMap.set(currentContext.deviceId, socket);
 	});
 
 	socket.on('disconnect', () => {
@@ -102,6 +115,10 @@ io.on('connection', (socket) => {
 
 	socket.on('logoutOwner', (params, setContext) => {
 		
+	});
+
+	socket.on('sendTo', (param) => {
+		sendMessageTo(param.to, param.txt);
 	});
 
 });
