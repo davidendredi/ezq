@@ -80,7 +80,7 @@ io.on('connection', (socket) => {
 				case Exception.Registration.SUCCESS:
 
 					socket.emit('command', generateCommand(CommandType.Registration.SHOW_MESSAGE_SUCCESS, {}), () => {
-						console.log("Command approved!");
+						//console.log("Command approved!");
 					});
 
 				break;

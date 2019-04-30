@@ -98,9 +98,19 @@
         console.log("Disconnected from server.");
       });
 
-      socket.on('command', (value, approveCommand) => {
+      socket.on('command', (command, approveCommand) => {
         // TODO: React to the command from the server (see command catalog)
-        console.log(value);
+        switch(command.commandType){
+          case SHOW_MESSAGE_SUCCESS: 
+            /* ToDo */
+          break;
+          case SHOW_LOGIN_SCREEN:
+            /* ToDo */
+          break;
+          case SHOW_INVALID_INPUT_ERROR_MESSAGE:
+            /* ToDo Print error message command.params.msg*/
+          break;
+        }
         // Callback at the end. This way, the server knows if and when the client has handeled the command.
         approveCommand();
       });
