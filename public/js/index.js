@@ -19,6 +19,10 @@ function setList(data) {
    }
 }
 
+function logout() {
+
+}
+
 $(document).ready(function() {
     new QRCode(document.getElementById("qrcode"), {
         text: "http://jindo.dev.naver.com/collie",
@@ -32,6 +36,8 @@ $(document).ready(function() {
     $("#qrheading").on("click", ()=>{
       $(".collapse").collapse('toggle');
     });
+
+    $("#logout").on('click', logout);
 
     setList({items : [{name : 'hallo'}, {name : 'welt'}, {name : 'hallo'}, {name : 'hallo'}, {name : 'welt'},  {name : 'hallo'},  {name : 'hallo'},  {name : 'hallo'},  {name : 'hallo'},  {name : 'hallo'},  {name : 'hallo'}]});
 });
