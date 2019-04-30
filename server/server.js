@@ -85,13 +85,29 @@ io.on('connection', (socket) => {
 
 				break;
 				case Exception.Registration.failure.INVALID_EMAIL:
-					/* ToDo */
+					
+					socket.emit('command', generateCommand(CommandType.Registration.SHOW_MESSAGE_SUCCESS, {}), () => {
+						//console.log("Command approved!");
+					});
+
+					socket.emit('command', generateCommand(CommandType.Registration.SHOW_LOGIN_SCREEN, {}), () => {
+						//console.log("Command approved!");
+					});
+
 				break;
 				case Exception.Registration.failure.PASSWORDS_NOT_EQUAL:
-					/* ToDo */
+					
+					socket.emit('command', generateCommand(CommandType.Registration.SHOW_INVALID_INPUT_ERROR_MESSAGE, {message: "Passwords are not equal."}), () => {
+						//console.log("Command approved!");
+					});
+
 				break;
 				case Exception.Registration.failure.ALREADY_REGISTERED:
-					/* ToDo */
+					
+					socket.emit('command', generateCommand(CommandType.Registration.SHOW_INVALID_INPUT_ERROR_MESSAGE, {message: "Account with this E-Mail is already registered."}), () => {
+						//console.log("Command approved!");
+					});
+
 				break;	
 			}
 			console.log(exc + " with context: " + JSON.stringify(params.context));
