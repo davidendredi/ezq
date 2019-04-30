@@ -1,10 +1,19 @@
+const CommandType = {
 
+	Registration: {
+		SHOW_MESSAGE_SUCCESS: "SHOW_MESSAGE_SUCCESS",
+		SHOW_LOGIN_SCREEN: "SHOW_LOGIN_SCREEN"
+	},
+	Login: {
 
-let generateCommand = () => {
-	return {commandType: "demo",
-			param_1: "value1",
-			param_2: "value2",
+	},
+
+}
+
+let generateCommand = (commandType, params) => {
+	return {commandType: commandType,
+			params: params,
 			timestamp: new Date().getTime()}
 }
 
-module.exports = {generateCommand};
+module.exports = {CommandType, generateCommand};

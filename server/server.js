@@ -1,6 +1,6 @@
 const HashMap = require('hashmap');
 
-const {generateCommand} = require('./util/command');
+const {CommandType, generateCommand} = require('./util/command');
 const {isRealString} = require('./util/validation');
 
 const Service = require('./service/Service');
@@ -28,17 +28,14 @@ app.use(express.static(publicPath));
 
 let socketMap = new HashMap();
 
-let sendMessageTo = function(deviceId, txt){
-	socketMap.get(deviceId).emit('testCommand', {txt: txt});
+let sendCommandToDevice = function(deviceId, command){
+	socketMap.get(deviceId).emit('command', command);
 }
 
 /*---------------------------------------------------------*/
 /*---Controller Implementation-----------------------------*/
 
 let service = new Service();
-
-let testSocket = null;
-
 
 io.on('connection', (socket) => { 
 
@@ -75,27 +72,29 @@ io.on('connection', (socket) => {
 
 	socket.on('registerOwner', (params, setContext) => {
 		try{
+
 			service.registerOwner(params.prename, params.surname, params.email, params.password1, params.password2);
+
 		}catch(exc){
 			switch(exc){
 				case Exception.Registration.SUCCESS:
-					console.log(exc);
 
-					socket.emit('command', generateCommand(), () => {
+					socket.emit('command', generateCommand(CommandType.Registration.SHOW_MESSAGE_SUCCESS, {}), () => {
 						console.log("Command approved!");
 					});
 
 				break;
 				case Exception.Registration.failure.INVALID_EMAIL:
-					console.log(exc);
+					/* ToDo */
 				break;
 				case Exception.Registration.failure.PASSWORDS_NOT_EQUAL:
-					console.log(exc);
+					/* ToDo */
 				break;
 				case Exception.Registration.failure.ALREADY_REGISTERED:
-					console.log(exc);
+					/* ToDo */
 				break;	
 			}
+			console.log(exc + " with context: " + JSON.stringify(params.context));
 		}
 	});
 
@@ -115,10 +114,6 @@ io.on('connection', (socket) => {
 
 	socket.on('logoutOwner', (params, setContext) => {
 		
-	});
-
-	socket.on('sendTo', (param) => {
-		sendMessageTo(param.to, param.txt);
 	});
 
 });

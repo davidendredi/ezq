@@ -44,7 +44,6 @@ class Service{
 		if(this.owners.filter(ow => ow.email === email).length != 0){
 			throw Exception.Registration.failure.ALREADY_REGISTERED;
 		}
-		console.log("test");
 		let newOwner = new Owner(firstname, surname, email, password1);
 		this.owners.push(newOwner);
 		throw Exception.Registration.SUCCESS;
