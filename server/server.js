@@ -6,8 +6,9 @@ const Service = require('./service/Service');
 let service = new Service(); 
 
 const Context = require('./util/context');
+const Exception = require('./util/exception');
 
-/*---------------------------------------------------------*/
+/*---Configuration socket.io-------------------------------*/
 
 const path = require('path');
 const http = require('http');
@@ -23,7 +24,11 @@ var io = socketIO(server);
 
 app.use(express.static(publicPath));
 /*---------------------------------------------------------*/
+/*---Addressed Messages------------------------------------*/
 
+
+/*---------------------------------------------------------*/
+/*---Controller Implementation-----------------------------*/
 
 io.on('connection', (socket) => { 
 
@@ -52,6 +57,53 @@ io.on('connection', (socket) => {
 	//socket.emit('command', generateCommand(), () => {
 	//	console.log("Command approved!");
 	//});
+
+	/*------Login & Register Page------*/
+
+	socket.on('registerOwner', (params, setContext) => {
+		try{
+			service.registerOwner(params.prename, params.surname, params.email, params.password1, params.password2);
+		}catch(exc){
+			switch(exc){
+				case Exception.Registration.SUCCESS:
+					console.log(exc);
+
+					socket.emit('command', generateCommand(), () => {
+						console.log("Command approved!");
+					});
+
+				break;
+				case Exception.Registration.failure.INVALID_EMAIL:
+					console.log(exc);
+				break;
+				case Exception.Registration.failure.PASSWORDS_NOT_EQUAL:
+					console.log(exc);
+				break;
+				case Exception.Registration.failure.ALREADY_REGISTERED:
+					console.log(exc);
+				break;	
+			}
+		}
+	});
+
+	socket.on('loginOwner', (params, setContext) => {
+		
+	});
+
+	/*------Admin Page--------------*/	
+
+	socket.on('inviteUser', (params, setContext) => {
+
+	});
+
+	socket.on('cancelUser', (params, setContext) => {
+		
+	});
+
+	socket.on('logoutOwner', (params, setContext) => {
+		
+	});
+
 });
 
 server.listen(port, () => {

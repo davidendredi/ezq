@@ -1,0 +1,17 @@
+const Registration = {
+	failure: {
+		INVALID_EMAIL: "INVALID_EMAIL",
+		PASSWORDS_NOT_EQUAL: "PASSWORDS_NOT_EQUAL",
+		ALREADY_REGISTERED: "ALREADY_REGISTERED",
+
+	}, SUCCESS: "REGISTRATION_SUCCESS"
+}
+
+const Login = {
+	failure: {
+		UNKNOWN_EMAIL: "UNKNOWN_EMAIL",
+		INCORRECT_PASSWORD: "INCORRECT_PASSWORD",
+	}, SUCCESS: "LOGIN_SUCCESS"
+}
+
+module.exports = {Registration, Login};
