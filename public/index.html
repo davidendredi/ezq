@@ -88,8 +88,8 @@
         console.log("Connected to server.");
         
         
-        socket.emit('registerDevice', localStorage.getItem('deviceID'), (newUid) => {
-          localStorage.setItem('deviceID', newUid);
+        socket.emit('registerDevice', localStorage.getItem('ezqContext'), (newContext) => {
+          localStorage.setItem('ezqContext', newContext);
         });
 
 

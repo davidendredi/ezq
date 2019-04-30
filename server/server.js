@@ -1,13 +1,18 @@
-const path = require('path');
-const http = require('http');
-const express = require('express');
-const socketIO = require('socket.io');
 
 const {generateCommand} = require('./util/command');
 const {isRealString} = require('./util/validation');
 
-const UserService = require('./service/UserService');
-let userService = new UserService(); 
+const Service = require('./service/Service');
+let service = new Service(); 
+
+const Context = require('./util/context');
+
+/*---------------------------------------------------------*/
+
+const path = require('path');
+const http = require('http');
+const express = require('express');
+const socketIO = require('socket.io');
 
 const publicPath = path.join(__dirname, '../public');
 //process.env.PORT is some heroku shit. 3000 if not used.
@@ -17,38 +22,30 @@ var server = http.createServer(app);
 var io = socketIO(server); 
 
 app.use(express.static(publicPath));
+/*---------------------------------------------------------*/
 
 
-io.on('connection', (socket) => {
+io.on('connection', (socket) => { 
 
-	let user = null;
+	let currentContext = null;
 
-	console.log("New client connected");
+	socket.on('registerDevice', (context, setContext) => {
+		
+		currentContext = JSON.parse(context);
 
-	socket.on('registerDevice', (uid, setUid) => {
-
-		if (userService.existsUid(uid)){
-			user = userService.getUserByUid(uid);
-			console.log("User recognized with uid " + uid);
-			user.connected = true;	
+		if (currentContext != null){
+			// Client already known 
+			console.log("Client (re-)connected with context:\n" + context);
 		}else{
-			user = userService.createAndAddUser();
-			setUid(user.uid);
-			console.log("User unknown. Create new one with uid " + user.uid);
+			// First connection with this client
+			currentContext = new Context(); // Create new Context only with random session id; userId null !
+			setContext(JSON.stringify(currentContext));
+			console.log("New client connected. Context created:\n" + JSON.stringify(newContext));
 		}
 	});
 
 	socket.on('disconnect', () => {
-		
-		user.connected = false;
-		setTimeout(() => {
-			if(!user.connected){
-				console.log("User " + user.uid + " GONE");
-			}else{
-				//console.log("Timeout ready.");
-			}
-		}, 10000);
-		console.log('User ' + user.uid + ' disconnected; waiting for reconnection...');
+		console.log("User disconnected with context:\n" + JSON.stringify(currentContext));
 	});
 
 	
