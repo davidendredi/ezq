@@ -1,5 +1,8 @@
 const CommandType = {
 
+	Demo: {
+		MESSAGE: "MESSAGE"
+	},
 	Registration: {
 		SHOW_MESSAGE_SUCCESS: "SHOW_MESSAGE_SUCCESS",
 		SHOW_LOGIN_SCREEN: "SHOW_LOGIN_SCREEN",

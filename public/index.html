@@ -110,6 +110,9 @@
           case "SHOW_INVALID_INPUT_ERROR_MESSAGE":
             /* ToDo Print error message command.params.msg */
           break;
+          case "MESSAGE":
+            console.log("Message: " + command.params.txt);
+          break;
         }
         // Callback at the end. This way, the server knows if and when the client has handeled the command.
         approveCommand();

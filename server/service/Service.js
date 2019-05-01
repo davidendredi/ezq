@@ -59,11 +59,12 @@ class Service{
 
 	loginOwner(email, password){
 
-		let foundOwners = owners.filter(ow => ow.email === email);
+		let foundOwners = this.owners.filter(ow => ow.email === email);
 
 		if(foundOwners.length == 0){
-			throw Excetion.Login.failure.UNKNOWN_EMAIL;
+			throw Exception.Login.failure.UNKNOWN_EMAIL;
 		}
+
 		if(foundOwners.length > 1){
 			console.log("Unexpected internal state: multiple owners with same email found");
 		}
@@ -71,7 +72,7 @@ class Service{
 		let owner = foundOwners.pop();
 
 		if(password != owner.password){
-			throw Excetion.Login.failure.INCORRECT_PASSWORD;
+			throw Exception.Login.failure.INCORRECT_PASSWORD;
 		}
 
 		// TODO ONLINE-Flag Handling
@@ -79,11 +80,11 @@ class Service{
 		/*
 		AUTOMATICALLY SET UP LOBBY
 		*/
-		if(lobbies.filter(lob => lob.owner === owner).length > 0){
+		if(this.lobbies.filter(lob => lob.owner === owner).length > 0){
 			console.log("Unexpected internal state: found active lobby when logging in");
 		}
 		let newLobby = new Lobby(owner);
-		lobbies.push(newLobby);
+		this.lobbies.push(newLobby);
 
 		return owner;
 		//throw Exception.Login.SUCCESS;

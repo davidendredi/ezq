@@ -31,15 +31,19 @@ let deviceUserMap = new HashMap();
 
 
 let sendCommandToDevice = function(deviceId, command){
+	console.log("sending to " + deviceId + "..");
 	deviceSocketMap.get(deviceId).emit('command', command);
 }
 
 let sendCommandToUser = function(userId, command){
-	let devices = [];
+	console.log("SENDING COMMANDS TO ALL DEVICES OF USER...");
 	deviceUserMap.forEach((value, key) => {
-		//if(){
+		console.log("key: " + key + ", value: " + value + "..searching for " + userId);
 
-		//}
+		if(value === userId){
+			console.log("true branch");
+			sendCommandToDevice(key, command);
+		}
 	});
 }
 
@@ -118,7 +122,8 @@ io.on('connection', (socket) => {
 						//console.log("Command approved!");
 					});
 
-				break;	
+				break;
+				default: console.log("Unexpected exception in Registration service.");
 			}
 			console.log(exc + " with context: " + JSON.stringify(params.context));
 		}
@@ -129,13 +134,24 @@ io.on('connection', (socket) => {
 	socket.on('loginOwner', (params, setContext) => {
 		try{
 
-			let owner = service.loginOwner(params.email, params.password);
-			
+			let owner = service.loginOwner(params.email, params.password);	
+
 			socket.emit('command', generateCommand(CommandType.Login.SHOW_ADMIN_SCREEN, {}), () => {
 						//console.log("Command approved!");
 			});
+			
+			/* Set userId in device context locally */
+			let newContext = JSON.parse(params.context);
+			newContext.userId = owner.getId();
+			setContext(JSON.stringify(newContext));
+
+			/* Add device to device-list of logged in user (owner in this case) */
+			deviceUserMap.set(JSON.parse(params.context).deviceId, owner.getId());
+			
+			console.log(Exception.Login.SUCCESS + " with context: " + JSON.stringify(newContext));
 
 		}catch(exc){
+
 			switch(exc){
 				case Exception.Login.failure.UNKNOWN_EMAIL:
 
@@ -151,6 +167,7 @@ io.on('connection', (socket) => {
 					});
 
 				break;
+				default: console.log("Unexpected exception in Login service.");
 			}
 			console.log(exc + " with context: " + JSON.stringify(params.context));
 		}
@@ -168,6 +185,10 @@ io.on('connection', (socket) => {
 
 	socket.on('logoutOwner', (params, setContext) => {
 		
+	});
+
+	socket.on('sendTo', (params, setContext) => {
+		sendCommandToUser(params.to, generateCommand(CommandType.Demo.MESSAGE, {txt: params.txt}));
 	});
 
 });
