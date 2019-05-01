@@ -26,10 +26,21 @@ app.use(express.static(publicPath));
 /*---------------------------------------------------------*/
 /*---Addressed Messages------------------------------------*/
 
-let socketMap = new HashMap();
+let deviceSocketMap = new HashMap();
+let deviceUserMap = new HashMap();
+
 
 let sendCommandToDevice = function(deviceId, command){
-	socketMap.get(deviceId).emit('command', command);
+	deviceSocketMap.get(deviceId).emit('command', command);
+}
+
+let sendCommandToUser = function(userId, command){
+	let devices = [];
+	deviceUserMap.forEach((value, key) => {
+		//if(){
+
+		//}
+	});
 }
 
 /*---------------------------------------------------------*/
@@ -56,7 +67,7 @@ io.on('connection', (socket) => {
 		}
 
 		// save/update socket associated with deviceId
-		socketMap.set(currentContext.deviceId, socket);
+		deviceSocketMap.set(currentContext.deviceId, socket);
 	});
 
 	socket.on('disconnect', () => {
@@ -113,8 +124,36 @@ io.on('connection', (socket) => {
 		}
 	});
 
+
+
 	socket.on('loginOwner', (params, setContext) => {
-		
+		try{
+
+			let owner = service.loginOwner(params.email, params.password);
+			
+			socket.emit('command', generateCommand(CommandType.Login.SHOW_ADMIN_SCREEN, {}), () => {
+						//console.log("Command approved!");
+			});
+
+		}catch(exc){
+			switch(exc){
+				case Exception.Login.failure.UNKNOWN_EMAIL:
+
+					socket.emit('command', generateCommand(CommandType.Login.SHOW_INVALID_INPUT_ERROR_MESSAGE, {message: "Unknown E-Mail."}), () => {
+						//console.log("Command approved!");
+					});
+
+				break;
+				case Exception.Login.failure.INCORRECT_PASSWORD:
+
+					socket.emit('command', generateCommand(CommandType.Login.SHOW_INVALID_INPUT_ERROR_MESSAGE, {message: "Incorrect Password."}), () => {
+						//console.log("Command approved!");
+					});
+
+				break;
+			}
+			console.log(exc + " with context: " + JSON.stringify(params.context));
+		}
 	});
 
 	/*------Admin Page--------------*/	

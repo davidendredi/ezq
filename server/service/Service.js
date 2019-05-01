@@ -6,6 +6,10 @@ class User{
 		this.name = name;
 		this.id = "User_" + new Date().getTime(); 
 	}
+
+	getId(){
+		return this.id;
+	}
 }
 
 class Owner{
@@ -14,8 +18,12 @@ class Owner{
 		this.surname = surname;
 		this.email = email;
 		this.password = password;
-		//this.id = "Owner_" + new Date().getTime();
+		this.id = "Owner_" + new Date().getTime();
 		this.salt = Math.random();	
+	}
+
+	getId(){
+		return this.id;
 	}
 }
 
@@ -50,7 +58,7 @@ class Service{
 	}
 
 	loginOwner(email, password){
-		
+
 		let foundOwners = owners.filter(ow => ow.email === email);
 
 		if(foundOwners.length == 0){
@@ -77,7 +85,8 @@ class Service{
 		let newLobby = new Lobby(owner);
 		lobbies.push(newLobby);
 
-		throw Exception.Login.SUCCESS;
+		return owner;
+		//throw Exception.Login.SUCCESS;
 	}
 
 
