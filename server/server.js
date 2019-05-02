@@ -135,10 +135,6 @@ io.on('connection', (socket) => {
 		try{
 
 			let owner = service.loginOwner(params.email, params.password);	
-
-			socket.emit('command', generateCommand(CommandType.Login.SHOW_ADMIN_SCREEN, {}), () => {
-						//console.log("Command approved!");
-			});
 			
 			/* Set userId in device context locally */
 			let newContext = JSON.parse(params.context);
@@ -147,8 +143,26 @@ io.on('connection', (socket) => {
 
 			/* Add device to device-list of logged in user (owner in this case) */
 			deviceUserMap.set(JSON.parse(params.context).deviceId, owner.getId());
+
+            let lobby = service.getLobbyOfOwner(owner.getId());
+
+            if (lobby === null || lobby.active == false) {
+
+                socket.emit('command', generateCommand(CommandType.Screen.SHOW_INACTIVE_ADMIN_SCREEN, {}), () => {
+                    //console.log("Command approved!");
+                });
+
+            } else {
+
+                socket.emit('command', generateCommand(CommandType.Screen.SHOW_ACTIVE_ADMIN_SCREEN, {
+                    queue: lobby.queue.map(user => user.name), enqueueKey: lobby.enqueueKey
+                }), () => {
+                    //console.log("Command approved!");
+                });
+
+            }
 			
-			console.log(Exception.Login.SUCCESS + " with context: " + JSON.stringify(newContext));
+			console.log(Exception.Login.SUCCESS + "; Context: " + JSON.stringify(newContext));
 
 		}catch(exc){
 
@@ -164,16 +178,101 @@ io.on('connection', (socket) => {
 
 					socket.emit('command', generateCommand(CommandType.Login.SHOW_INVALID_INPUT_ERROR_MESSAGE, {message: "Incorrect Password."}), () => {
 						//console.log("Command approved!");
-					});
+                    });
 
 				break;
 				default: console.log("Unexpected exception in Login service.");
 			}
-			console.log(exc + " with context: " + JSON.stringify(params.context));
+			console.log(exc + "; Context: " + JSON.stringify(params.context));
 		}
-	});
+    });
+
+    /*------User Page---------------*/
+
+    socket.on('enqueue', (params, setContext) => {
+
+    });
 
 	/*------Admin Page--------------*/	
+
+    socket.on('openLobby', (params, setContext) => {
+
+        let context = JSON.parse(params.context);
+
+        try {
+
+            service.openLobby(context.userId);
+
+        } catch (exc) {
+            try {
+                let lobby = service.getLobbyOfOwner(context.userId);
+            } catch (err) {
+                exc + "; Context: " + JSON.stringify(params.context)
+            }
+
+            switch (exc) {
+
+                case Exception.Lobby.success.CREATED_NEW_ACTIVE_LOBBY:
+                    
+                    socket.emit('command', generateCommand(CommandType.Screen.SHOW_ACTIVE_ADMIN_SCREEN, {
+                        queue: lobby.queue, enqueueKey: lobby.enqueueKey
+                    }), () => {
+                        //console.log("Command approved!");
+                    });
+
+                    break;
+                case Exception.Lobby.success.ACTIVATED_EXISTING_LOBBY:
+
+                    socket.emit('command', generateCommand(CommandType.Screen.SHOW_ACTIVE_ADMIN_SCREEN, {
+                        queue: lobby.queue, enqueueKey: lobby.enqueueKey
+                    }), () => {
+                        //console.log("Command approved!");
+                    });
+
+                    break;
+                case Exception.Lobby.failure.OWNER_NOT_FOUND_WHILE_OPENING_LOBBY:
+                    /* TODO Log out!*/
+                    break;
+                case Exception.Lobby.failure.MULTIPLE_OWNERS_FOUND_WHILE_OPENING_LOBBY:
+                    /* Intentionally left blank */
+                    break;
+            }
+            console.log(exc + "; Context: " + JSON.stringify(params.context));
+        }
+    });
+
+    socket.on('closeLobby', (params, setContext) => {
+
+        let context = JSON.parse(params.context);
+
+        try {
+
+            service.closeLobby(context.userId);
+
+        } catch (exc) {
+            switch (exc) {
+                case Exception.Lobby.success.EXISTING_LOBBY_CLOSED:
+
+
+                    break;
+                case Exception.Lobby.failure.OWNER_NOT_FOUND_WHILE_CLOSING_LOBBY:
+
+                    break;
+                case Exception.Lobby.failure.MULTIPLE_OWNERS_FOUND_WHILE_CLOSING_LOBBY:
+
+                    break;
+                case Exception.Lobby.failure.TRIED_TO_CLOSE_NOT_EXISTING_LOBBY:
+
+                    break;
+                case Exception.Lobby.failure.TRIED_TO_CLOSE_IN_STATE_INACTIVE:
+
+                    break;
+                
+            }
+            console.log(exc + "; Context: " + JSON.stringify(params.context));
+        }
+
+    });
 
 	socket.on('inviteUser', (params, setContext) => {
 
