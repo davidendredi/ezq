@@ -1,6 +1,6 @@
 var validator = require('validator');
 const Exception = require('./../util/exception');
-const { generateNewKeyFor, freeKeyFor } = require('./../util/uniqueKeyGenerator');
+const { generateNewKeyFor, freeKeyFor, getItemByKey } = require('./../util/uniqueKeyGenerator');
 
 class User{
 	constructor(name){
@@ -41,6 +41,17 @@ class Lobby{
 class Service{
 	constructor(){
 		this.owners = [];
+    }
+
+    getOwnerByEnqueueKey(eKey) {
+        let out = null;
+        let lobbyId = getItemByKey(eKey);
+        this.owners.forEach(ow => {
+            if (ow.lobby.id === lobbyId) {
+                out = ow;
+            }
+        });
+        return out;
     }
 
     getLobbyOfOwner(ownerId) {
@@ -166,7 +177,42 @@ class Service{
         }
     }
 
+    enqueue(enqueueKey, name) {
 
+        let lobbyId = null;
+
+        try {
+            lobbyId = getItemByKey(enqueueKey);
+        } catch (exc) {
+            switch (exc) {
+                case Exception.Internal.unexpected.LOBBY_NOT_FOUND_FOR_ENQUEUE_KEY:
+                    throw Exception.Queue.failure.INVALID_ENQUEUE_KEY;
+                    break;
+                default:
+                    throw exc;
+            }
+        }
+
+        let foundLobby = null;
+
+        this.owners.forEach((ow) => {
+            if (ow.lobby != null && ow.lobby.id === lobbyId) {
+                foundLobby = ow.lobby;
+            }
+        });
+
+        if (foundLobby === null) { // Unexpected !!!
+            throw Exception.Internal.unexpected.FOUND_LOBBY_ID_FOR_ENQUEUE_KEY_BUT_NO_LOBBY;
+        }
+
+        let newUser = new User(name);
+        foundLobby.queue.push(newUser);
+
+        // Set new enqueue key
+        foundLobby.enqueueKey = generateNewKeyFor(foundLobby.id);
+
+        return newUser.id;
+    }
 
 
 }

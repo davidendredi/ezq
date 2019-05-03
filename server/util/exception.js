@@ -2,7 +2,9 @@ const Internal = {
     unexpected: {
         MULTIPLE_OWNERS_WITH_SAME_EMAIL_FOUND: "MULTIPLE_OWNERS_WITH_SAME_EMAIL_FOUND",
         OWNER_NOT_FOUND: "OWNER_NOT_FOUND",
-        MULTIPLE_OWNERS_FOUND: "MULTIPLE_OWNERS_FOUND"
+        MULTIPLE_OWNERS_FOUND: "MULTIPLE_OWNERS_FOUND",
+        LOBBY_NOT_FOUND_FOR_ENQUEUE_KEY: "LOBBY_NOT_FOUND_FOR_ENQUEUE_KEY",
+        FOUND_LOBBY_ID_FOR_ENQUEUE_KEY_BUT_NO_LOBBY: "FOUND_LOBBY_ID_FOR_ENQUEUE_KEY_BUT_NO_LOBBY"
     }
 }
 
@@ -40,4 +42,13 @@ const Lobby = {
     }
 }
 
-module.exports = {Internal, Registration, Login, Lobby};
+const Queue = {
+    failure: {
+        INVALID_ENQUEUE_KEY: "INVALID_ENQUEUE_KEY"
+    },
+    success: {
+        USER_SUCCESSFULLY_ENQUEUED: "USER_SUCCESSFULLY_ENQUEUED"
+    }
+}
+
+module.exports = {Internal, Registration, Login, Lobby, Queue};

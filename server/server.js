@@ -31,17 +31,12 @@ let deviceUserMap = new HashMap();
 
 
 let sendCommandToDevice = function(deviceId, command){
-	console.log("sending to " + deviceId + "..");
 	deviceSocketMap.get(deviceId).emit('command', command);
 }
 
 let sendCommandToUser = function(userId, command){
-	console.log("SENDING COMMANDS TO ALL DEVICES OF USER...");
 	deviceUserMap.forEach((value, key) => {
-		console.log("key: " + key + ", value: " + value + "..searching for " + userId);
-
 		if(value === userId){
-			console.log("true branch");
 			sendCommandToDevice(key, command);
 		}
 	});
@@ -191,6 +186,61 @@ io.on('connection', (socket) => {
 
     socket.on('enqueue', (params, setContext) => {
 
+        let context = JSON.parse(params.context);
+
+        try {
+
+            let owner = service.getOwnerByEnqueueKey(params.enqueueKey);
+
+            if (owner === null) {
+                socket.emit('command', generateCommand(CommandType.User.SHOW_INVALID_INPUT_ERROR_MESSAGE, {
+                    msg: "Invalid Enqueue Key!"
+                }), () => {
+                    //console.log("Command approved!");
+                });
+            }
+
+            let newUserId = service.enqueue(params.enqueueKey, params.name);
+
+            /* Set userId in device context locally */
+            let newContext = JSON.parse(params.context);
+            newContext.userId = newUserId;
+            setContext(JSON.stringify(newContext));
+
+            console.log(Exception.Queue.success.USER_SUCCESSFULLY_ENQUEUED + "; Context: " + JSON.stringify(newContext));
+
+            /* Add device to device-list of logged in user (owner in this case) */
+            deviceUserMap.set(JSON.parse(params.context).deviceId, newUserId);
+
+            socket.emit('command', generateCommand(CommandType.User.SHOW_USER_SUCCESSFULLY_ENQUEUED, {
+                /* Intentionally left blank */
+            }), () => {
+                    //console.log("Command approved!");
+            });
+
+            /* Notify all Owner devices */
+            sendCommandToUser(owner.id, generateCommand(CommandType.Screen.UPDATE_OWNER_SCREEN, {
+                queue: owner.lobby.queue, enqueueKey: owner.lobby.enqueueKey, lobbyActive: owner.lobby.active
+            }), () => {
+
+            });
+
+        } catch (exc) {
+
+            switch (exc) {
+                case Exception.Queue.failure.INVALID_ENQUEUE_KEY:
+
+                    socket.emit('command', generateCommand(CommandType.User.SHOW_INVALID_INPUT_ERROR_MESSAGE, {
+                        msg: "Invalid Enqueue Key!"
+                    }), () => {
+                        //console.log("Command approved!");
+                    });
+
+                    break;
+            }
+            console.log(exc + "; Context: " + JSON.stringify(params.context));
+        }
+
     });
 
 	/*------Admin Page--------------*/	
@@ -204,8 +254,11 @@ io.on('connection', (socket) => {
             service.openLobby(context.userId);
 
         } catch (exc) {
+
+            let lobby = null;
+
             try {
-                let lobby = service.getLobbyOfOwner(context.userId);
+                lobby = service.getLobbyOfOwner(context.userId);
             } catch (err) {
                 exc + "; Context: " + JSON.stringify(params.context)
             }
