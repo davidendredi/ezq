@@ -54,7 +54,7 @@ class Service{
         return out;
     }
 
-    getLobbyOfOwner(ownerId) {
+    getOwnerById(ownerId) {
         let foundOwner = this.owners.filter(ow => ow.id === ownerId);
 
         if (foundOwner.length === 0) {
@@ -67,7 +67,7 @@ class Service{
 
         foundOwner = foundOwner.pop();
 
-        return foundOwner.lobby;
+        return foundOwner;
     }
 
 
@@ -172,8 +172,10 @@ class Service{
 
             freeKeyFor(foundLobby.id);
             foundLobby.active = false;
+            foundLobby.queue = [];
 
-            throw Exception.Lobby.success.EXISTING_LOBBY_CLOSED;
+            return foundLobby;
+            //throw Exception.Lobby.success.EXISTING_LOBBY_CLOSED;
         }
     }
 
@@ -214,6 +216,34 @@ class Service{
         return newUser.id;
     }
 
+    dequeue(ownerId, userId) {
+        let foundOwner = null;
+        this.owners.forEach(ow => {
+            if (ow.id === ownerId) {
+                foundOwner = ow;
+            }
+        });
+
+        if (foundOwner === null) {
+            throw Exception.Internal.unexpected.OWNER_NOT_FOUND;
+        }
+
+        let newQ = foundOwner.lobby.queue.filter(us => {
+            return us.id != userId;
+        });
+
+        let dif = foundOwner.lobby.queue.length - newQ.length;
+        if (dif === 0) {
+            throw Exception.Queue.failure.USER_NOT_FOUND_IN_QUEUE;
+        }
+        if (dif > 1) {
+            throw Exception.Internal.unexpected.MULTIPLE_USERS_WITH_SAME_ID_FOUND_IN_QUEUE;
+        }
+
+        // Remove user
+        foundOwner.lobby.queue = newQ;
+        throw Exception.Queue.success.USER_SUCCESSFULLY_DEQUEUED;
+    }
 
 }
 

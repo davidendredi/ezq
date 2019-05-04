@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -66,7 +66,6 @@
     </div>
 
     <div id="LoginDiv">
-        <form>
             <div class="input-group mb-3">
                 <div class="input-group-prepend">
                     <span class="input-group-text">https://</span>
@@ -75,16 +74,15 @@
             </div>
 
             <div class="form-group">
-                <label for="user">User</label>
-                <input type="text" class="form-control" id="user" placeholder="User">
+                <label for="mailLog">Mail</label>
+                <input type="text" class="form-control" id="mailLog" placeholder="Mail">
             </div>
 
             <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" class="form-control" id="password" placeholder="Password">
+                <label for="passwordLog">Password</label>
+                <input type="password" class="form-control" id="passwordLog" placeholder="Password">
             </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
+            <button type="button" id="submitLog" class="btn btn-primary">Login</button>
     </div>
 
     <div id="RegisterDiv">
@@ -117,7 +115,7 @@
                 </label>
             </div>
 
-            <button id="submitBtn" type="submit" class="btn btn-primary">Submit</button>
+            <button id="submitReg" type="button" class="btn btn-primary">Register</button>
         </div>
     </div>
 </div>
@@ -155,14 +153,17 @@
             $("#routeLogin").addClass("active");
             $("#routeRegister").removeClass("active");
           break;
-          case "SHOW_INVALID_INPUT_ERROR_MESSAGE":
-            /* ToDo Print error message command.params.msg */
-            $('#alertDanger').show();
-            setTimeout(() => {
-                $('#alertDanger').hide();
-            }, 3000);
-            $('#alertDanger').html(command.params.message);
-          break;
+            case "SHOW_INVALID_INPUT_ERROR_MESSAGE":
+                /* ToDo Print error message command.params.msg */
+                $('#alertDanger').show();
+                setTimeout(() => {
+                    $('#alertDanger').hide();
+                }, 3000);
+                $('#alertDanger').html(command.params.message);
+                break;
+            case "SHOW_OWNER_SCREEN":
+                window.location = "/admin.html";
+                break;
         }
         console.log("Received command:\n" + JSON.stringify(command));
 
@@ -170,7 +171,10 @@
         approveCommand();
       });
 
-      function submit() {
+    
+
+    $("#submitReg").on("click", () => {
+       
         socket.emit('registerOwner', {
             prename: "Heinz",
             surname: "Peter",
@@ -178,10 +182,28 @@
             password1: $("#passwordReg").val(),
             password2: $("#passwordRepReg").val(),
             context: localStorage.getItem('ezqContext')
+        }, (newContext) => {
+	        localStorage.setItem('ezqContext', newContext);
+	        console.log("New context.");
             });
-      }
 
-      $("#submitBtn").on("click", submit);
+        $("input").val("");
+    });
+    
+    $("#submitLog").on("click", () => {
+        
+        socket.emit('loginOwner', {
+            email: $("#mailLog").val(),
+            password: $("#passwordLog").val(),
+            context: localStorage.getItem('ezqContext')
+        }, (newContext) => {
+	        localStorage.setItem('ezqContext', newContext);
+	        console.log("New context.");
+            });
+
+        $("input").val("");
+    });
+
     </script>
 </body>
 </html>

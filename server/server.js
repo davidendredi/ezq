@@ -30,7 +30,8 @@ let deviceSocketMap = new HashMap();
 let deviceUserMap = new HashMap();
 
 
-let sendCommandToDevice = function(deviceId, command){
+let sendCommandToDevice = function (deviceId, command) {
+    console.log("Send " + command + " to " + deviceId);
 	deviceSocketMap.get(deviceId).emit('command', command);
 }
 
@@ -72,11 +73,6 @@ io.on('connection', (socket) => {
 	socket.on('disconnect', () => {
 		console.log("User disconnected with context:\n" + JSON.stringify(currentContext));
 	});
-
-	
-	//socket.emit('command', generateCommand(), () => {
-	//	console.log("Command approved!");
-	//});
 
 	/*------Login & Register Page------*/
 
@@ -139,24 +135,15 @@ io.on('connection', (socket) => {
 			/* Add device to device-list of logged in user (owner in this case) */
 			deviceUserMap.set(JSON.parse(params.context).deviceId, owner.getId());
 
-            let lobby = service.getLobbyOfOwner(owner.getId());
+            let lobby = service.getOwnerById(owner.getId()).lobby;
 
-            if (lobby === null || lobby.active == false) {
 
-                socket.emit('command', generateCommand(CommandType.Screen.SHOW_INACTIVE_ADMIN_SCREEN, {}), () => {
-                    //console.log("Command approved!");
-                });
+            socket.emit('command', generateCommand(CommandType.Screen.SHOW_OWNER_SCREEN, {
+                 /* No params */
+            }), () => {
+                 //console.log("Command approved!");
+            });
 
-            } else {
-
-                socket.emit('command', generateCommand(CommandType.Screen.SHOW_ACTIVE_ADMIN_SCREEN, {
-                    queue: lobby.queue.map(user => user.name), enqueueKey: lobby.enqueueKey
-                }), () => {
-                    //console.log("Command approved!");
-                });
-
-            }
-			
 			console.log(Exception.Login.SUCCESS + "; Context: " + JSON.stringify(newContext));
 
 		}catch(exc){
@@ -221,9 +208,7 @@ io.on('connection', (socket) => {
             /* Notify all Owner devices */
             sendCommandToUser(owner.id, generateCommand(CommandType.Screen.UPDATE_OWNER_SCREEN, {
                 queue: owner.lobby.queue, enqueueKey: owner.lobby.enqueueKey, lobbyActive: owner.lobby.active
-            }), () => {
-
-            });
+            }), () => {});
 
         } catch (exc) {
 
@@ -243,44 +228,73 @@ io.on('connection', (socket) => {
 
     });
 
-	/*------Admin Page--------------*/	
+	/*------Admin Page--------------*/
+
+    socket.on('requestUpdateOwnerScreen', (params, setContext) => {
+
+        let context = JSON.parse(params.context);
+        try {
+            let owner = service.getOwnerById(context.userId);
+
+            if (owner.lobby === null || owner.lobby.active == false) {
+                socket.emit('command', generateCommand(CommandType.Screen.UPDATE_OWNER_SCREEN, {
+                    queue: [], enqueueKey: null, lobbyActive: false
+                }), () => {
+                    //console.log("Command approved!");
+                });
+            } else {
+                socket.emit('command', generateCommand(CommandType.Screen.UPDATE_OWNER_SCREEN, {
+                    queue: owner.lobby.queue, enqueueKey: owner.lobby.enqueueKey, lobbyActive: owner.lobby.active
+                }), () => {
+                    //console.log("Command approved!");
+                });
+            }
+
+        } catch (exc) {
+            switch (exc) {
+                case Exception.Internal.unexpected.OWNER_NOT_FOUND:
+                    console.log("Owner not found when requesting update for owner screen.");
+
+                    socket.emit('command', generateCommand(CommandType.Screen.SHOW_LOGIN_SCREEN, {
+                        /* No params */
+                    }), () => {
+                        //console.log("Command approved!");
+                    });
+
+                    break;
+            }
+            console.log("DEBUG: " + exc);
+        }
+    });
 
     socket.on('openLobby', (params, setContext) => {
 
         let context = JSON.parse(params.context);
 
         try {
-
             service.openLobby(context.userId);
-
         } catch (exc) {
 
             let lobby = null;
-
             try {
-                lobby = service.getLobbyOfOwner(context.userId);
+                lobby = service.getOwnerById(context.userId).lobby;
             } catch (err) {
                 exc + "; Context: " + JSON.stringify(params.context)
             }
-
             switch (exc) {
 
                 case Exception.Lobby.success.CREATED_NEW_ACTIVE_LOBBY:
-                    
-                    socket.emit('command', generateCommand(CommandType.Screen.SHOW_ACTIVE_ADMIN_SCREEN, {
-                        queue: lobby.queue, enqueueKey: lobby.enqueueKey
-                    }), () => {
-                        //console.log("Command approved!");
-                    });
+
+                    sendCommandToUser(context.userId, generateCommand(CommandType.Screen.UPDATE_OWNER_SCREEN, {
+                        queue: lobby.queue, enqueueKey: lobby.enqueueKey, lobbyActive: lobby.active
+                    }));
 
                     break;
                 case Exception.Lobby.success.ACTIVATED_EXISTING_LOBBY:
 
-                    socket.emit('command', generateCommand(CommandType.Screen.SHOW_ACTIVE_ADMIN_SCREEN, {
-                        queue: lobby.queue, enqueueKey: lobby.enqueueKey
-                    }), () => {
-                        //console.log("Command approved!");
-                    });
+                    sendCommandToUser(context.userId, generateCommand(CommandType.Screen.UPDATE_OWNER_SCREEN, {
+                        queue: lobby.queue, enqueueKey: lobby.enqueueKey, lobbyActive: lobby.active
+                    }));
 
                     break;
                 case Exception.Lobby.failure.OWNER_NOT_FOUND_WHILE_OPENING_LOBBY:
@@ -300,25 +314,26 @@ io.on('connection', (socket) => {
 
         try {
 
-            service.closeLobby(context.userId);
+            let lobby = service.closeLobby(context.userId);
+
+            sendCommandToUser(context.userId, generateCommand(CommandType.Screen.UPDATE_OWNER_SCREEN, {
+                queue: lobby.queue, enqueueKey: lobby.enqueueKey, lobbyActive: lobby.active
+            }));
+            console.log(Exception.Lobby.success.EXISTING_LOBBY_CLOSED + "; Context: " + JSON.stringify(params.context));
 
         } catch (exc) {
             switch (exc) {
-                case Exception.Lobby.success.EXISTING_LOBBY_CLOSED:
-
-
-                    break;
                 case Exception.Lobby.failure.OWNER_NOT_FOUND_WHILE_CLOSING_LOBBY:
-
+                    /* TODO Log out!*/
                     break;
                 case Exception.Lobby.failure.MULTIPLE_OWNERS_FOUND_WHILE_CLOSING_LOBBY:
-
+                    /* Intentionally left blank */
                     break;
                 case Exception.Lobby.failure.TRIED_TO_CLOSE_NOT_EXISTING_LOBBY:
-
+                    /* TODO Log out!*/
                     break;
                 case Exception.Lobby.failure.TRIED_TO_CLOSE_IN_STATE_INACTIVE:
-
+                    /* TODO Update*/
                     break;
                 
             }
@@ -327,12 +342,64 @@ io.on('connection', (socket) => {
 
     });
 
-	socket.on('inviteUser', (params, setContext) => {
+    socket.on('fetchUser', (params, setContext) => {
+        let context = JSON.parse(params.context);
+        try {
+            service.dequeue(params.targetUserId);
+        } catch (exc) {
+            switch (exc) {
+                case Exception.Queue.success.USER_SUCCESSFULLY_DEQUEUED:
+                    /* Notify all Owner devices */
+                    sendCommandToUser(context.userId, generateCommand(CommandType.Screen.UPDATE_OWNER_SCREEN, {
+                        queue: service.getOwnerById(context.userId).lobby.queue,
+                        enqueueKey: service.getOwnerById(context.userId).lobby.enqueueKey,
+                        lobbyActive: service.getOwnerById(context.userId).lobby.active
+                    }), () => {});
 
+                    // Notify user
+                    sendCommandToUser(params.targetUserId, generateCommand(CommandType.Demo.FETCH_USER, {
+                        txt: params.txt
+                    }));
+
+                    break;
+                case Exception.Queue.failure.USER_NOT_FOUND_IN_QUEUE:
+
+                    break;
+                case Exception.Internal.unexpected.OWNER_NOT_FOUND:
+                    break;
+            }
+            console.log(exc + "; Context: " + JSON.stringify(params.context));
+        }
 	});
 
 	socket.on('cancelUser', (params, setContext) => {
-		
+        let context = JSON.parse(params.context);
+        try {
+            service.dequeue(params.targetUserId);
+        } catch (exc) {
+            switch (exc) {
+                case Exception.Queue.success.USER_SUCCESSFULLY_DEQUEUED:
+                    /* Notify all Owner devices */
+                    sendCommandToUser(context.userId, generateCommand(CommandType.Screen.UPDATE_OWNER_SCREEN, {
+                        queue: service.getOwnerById(context.userId).lobby.queue,
+                        enqueueKey: service.getOwnerById(context.userId).lobby.enqueueKey,
+                        lobbyActive: service.getOwnerById(context.userId).lobby.active
+                    }), () => { });
+
+                    // Notify user
+                    sendCommandToUser(params.targetUserId, generateCommand(CommandType.Demo.CANCEL_USER, {
+                        txt: params.txt
+                    }));
+
+                    break;
+                case Exception.Queue.failure.USER_NOT_FOUND_IN_QUEUE:
+
+                    break;
+                case Exception.Internal.unexpected.OWNER_NOT_FOUND:
+                    break;
+            }
+            console.log(exc + "; Context: " + JSON.stringify(params.context));
+        }
 	});
 
 	socket.on('logoutOwner', (params, setContext) => {
