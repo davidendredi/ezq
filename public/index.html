@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -11,26 +11,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <title>Enqueue</title>
 </head>
+
 <body>
 
     <div class=container">
 
-        <div class="row">
-            <div class="col-12">
-                <img src="/res/queue0.png" class="img-fluid" alt="queue">
+        <div id="alertDanger" class="alert alert-danger" role="alert">
+            Wrong id
+        </div>
+
+        <img src="/res/queue0.png" class="img-fluid" alt="queue">
+
+        <div id="enqueueView">
+
+            <div class="input-group mb-3">
+                <input id="key" type="text" class="form-control" placeholder="Key" aria-label="Enqueue key" aria-describedby="basic-addon2">
+                <div class="input-group-append">
+                    <button id="enqueueKeyBtn" class="btn btn-outline-secondary" type="button">OK</button>
+                </div>
             </div>
         </div>
 
-        <div class="input-group mb-3">
-            <input id="key" type="text" class="form-control" placeholder="Key" aria-label="Enqueue key" aria-describedby="basic-addon2">
-            <div class="input-group-append">
-                <button id="enqueueKeyBtn" class="btn btn-outline-secondary" type="button">OK</button>
+        <div id="nameView">
+
+            <div class="input-group mb-3">
+                <input id="nameInput" type="text" class="form-control" placeholder="Name" aria-label="Name" aria-describedby="basic-addon2">
+                <div class="input-group-append">
+                    <button id="nameBtn" class="btn btn-outline-secondary" type="button" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Please enter your name.">Enqueue</button>
+                </div>
             </div>
+
         </div>
 
     </div>
 
-    <script>/*
+    <button id="admin" class="btn btn-outline-secondary" type="button" >Admin</button>
+
+    <script>
         // open connection
         let socket = io();
         socket.on('connect', () => {
@@ -45,11 +62,39 @@
 
         socket.on('disconnect', () => {
             console.log("Disconnected from server.");
-        });*/
+        });
 
         $("#enqueueKeyBtn").on("click", () => {
-            alert($("#key").val());
-        })
+            $("#enqueueView").hide();
+            $("#nameView").show();
+            $('[data-toggle="popover"]').popover('show');
+            setTimeout(() => {
+                $('[data-toggle="popover"]').popover('hide');
+            }, 3000);
+
+
+        });
+
+        $("#nameBtn").on("click", () => {
+            socket.emit('enqueue', {
+                enqueueKey: parseInt($("#key").val()), name: $("#nameInput").val(), context: localStorage.getItem('ezqContext')
+            }, (newContext) => {
+	            localStorage.setItem('ezqContext', newContext);
+            });
+        });
+
+        $("#admin").on("click", () => {
+            window.location = 'admin.html';
+        });
+        
+
+        $("#key").val(new URLSearchParams(window.location.search).get("enqueueKey"));
+        if ($("#key").val() != "")
+            $("#enqueueView").hide();
+        else
+            $("#nameView").hide();
+
+        $("#alertDanger").hide();
     </script>
 
 </body>
