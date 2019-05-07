@@ -171,6 +171,7 @@ class Service{
             }
 
             freeKeyFor(foundLobby.id);
+            foundLobby.enqueueKey = null;
             foundLobby.active = false;
             foundLobby.queue = [];
 

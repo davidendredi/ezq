@@ -103,7 +103,7 @@
                                           <span class="slider round"></span>
                                       </label>
                                       <h5 class="mb-0" id="qrheading">
-                                          <label class="collapsed primary" data-toggle="collapse" data-target="#qrbox" aria-expanded="false" aria-controls="qrbox">
+                                          <label class="collapsed primary" id="enqueueKeyLabel" data-toggle="collapse" data-target="#qrbox" aria-expanded="false" aria-controls="qrbox">
                                               MyUrls.com
                                           </label>
                                       </h5>
@@ -160,6 +160,7 @@
                       // queue, enqueueKey, lobbyActive
                       $("#lobbyStat").prop("checked", command.params.lobbyActive);
                       setList(command.params.queue);
+                      $("#enqueueKeyLabel").html(command.params.enqueueKey);
                       new QRCode(document.getElementById("qrcode"), {
                             text: `https://127.0.0.1/queueMe.html?enqueueKey=${command.params.enqueueKey}`,
                             width: 128,
