@@ -173,7 +173,6 @@ io.on('connection', (socket) => {
 
     socket.on('enqueue', (params, setContext) => {
 
-        socket.emit('test', {});
 
         let context = JSON.parse(params.context);
 
@@ -182,7 +181,7 @@ io.on('connection', (socket) => {
             let owner = service.getOwnerByEnqueueKey(params.enqueueKey);
 
             if (owner === null) {
-                socket.emit('command', generateCommand(CommandType.User.SHOW_INVALID_INPUT_ERROR_MESSAGE, {
+                socket.emit('command', generateCommand(CommandType.User.ENQUEUE__SHOW_INVALID_INPUT_ERROR_MESSAGE, {
                     msg: "Invalid Enqueue Key!"
                 }), () => {
                     //console.log("Command approved!");

@@ -2,7 +2,7 @@ const HashMap = require('hashmap');
 const Exception = require('./exception');
 
 let map = new HashMap();
-let currentMax = 0; // TODO Change Implementation !!!
+let currentMax = 100; // TODO Change Implementation !!!
 
 let generateNewKeyFor = function (item) {
     map.set(item, currentMax);

@@ -60,13 +60,27 @@
 
         });
 
-        socket.on('test', () => {
-            alert("It worked.");
-        });
+        // SHOW_USER_SUCCESSFULLY_ENQUEUED
 
         socket.on('disconnect', () => {
             console.log("Disconnected from server.");
         });
+
+        socket.on('command', (command, approveCommand) => {
+              // TODO: React to the command from the server (see command catalog)
+              switch (command.commandType) {
+                  case "SHOW_USER_SUCCESSFULLY_ENQUEUED":
+                      // TODO @DOMINIK 
+                      alert("Erfolgreich angestellt!");
+                      break;
+                  case "ENQUEUE__SHOW_INVALID_INPUT_ERROR_MESSAGE":
+                      // TODO @DOMINIK
+                      alert("Error: " + command.params.msg);
+                      break;
+              }
+              console.log("Received command:\n" + JSON.stringify(command));
+              approveCommand();
+          });
 
         $("#enqueueKeyBtn").on("click", () => {
             $("#enqueueView").hide();
