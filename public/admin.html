@@ -163,7 +163,8 @@
                       $("#enqueueKeyLabel").html(command.params.enqueueKey);
                       $("#qrcode").html("");
                       new QRCode(document.getElementById("qrcode"), {
-                            text: `https://127.0.0.1/index.html?enqueueKey=${command.params.enqueueKey}`,
+                            //text: `https://127.0.0.1/index.html?enqueueKey=${command.params.enqueueKey}`,
+                            text: `https://ancient-thicket-27644.herokuapp.com/index.html?enqueueKey=${command.params.enqueueKey}`,
                             width: 128,
                             height: 128,
                             colorDark : "#000000",
