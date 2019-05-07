@@ -2,10 +2,11 @@
   "ExpandedNodes": [
     "",
     "\\public",
+    "\\public\\js",
     "\\server",
     "\\server\\service",
     "\\server\\util"
   ],
-  "SelectedNode": "\\server\\server.js",
+  "SelectedNode": "\\public\\index.html",
   "PreviewInSolutionExplorer": false
 }

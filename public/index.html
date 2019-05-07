@@ -60,6 +60,10 @@
 
         });
 
+        socket.on('test', () => {
+            alert("It worked.");
+        });
+
         socket.on('disconnect', () => {
             console.log("Disconnected from server.");
         });

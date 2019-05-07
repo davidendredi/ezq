@@ -179,7 +179,6 @@
     });
     
     $("#submitLog").on("click", () => {
-        
         socket.emit('loginOwner', {
             email: $("#mailLog").val(),
             password: $("#passwordLog").val(),

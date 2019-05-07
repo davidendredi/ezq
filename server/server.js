@@ -173,6 +173,8 @@ io.on('connection', (socket) => {
 
     socket.on('enqueue', (params, setContext) => {
 
+        socket.emit('test', {});
+
         let context = JSON.parse(params.context);
 
         try {
