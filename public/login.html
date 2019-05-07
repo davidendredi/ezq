@@ -143,7 +143,7 @@
             //alert("Successfully registered.");
             $('#alertSucc').show();
             setTimeout(() => {
-                $('#alertSucc').hide();
+                $('#alertSucc').fadeOut(1000);
             }, 3000);
           break;
           case "SHOW_LOGIN_SCREEN":
@@ -157,7 +157,7 @@
                 /* ToDo Print error message command.params.msg */
                 $('#alertDanger').show();
                 setTimeout(() => {
-                    $('#alertDanger').hide();
+                    $('#alertDanger').fadeOut(1000);
                 }, 3000);
                 $('#alertDanger').html(command.params.message);
                 break;
